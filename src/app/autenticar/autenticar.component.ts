@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -19,7 +20,8 @@ export class AutenticarComponent {
 
   //construtor
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private spinner: NgxSpinnerService
   ) { }
 
 
@@ -41,18 +43,19 @@ export class AutenticarComponent {
   //função para capturar o SUBMIT do formulário
   onSubmit(): void {
 
+    this.spinner.show();
 
     //limpar o valor das variáveis
     this.mensagem_sucesso = '';
     this.mensagem_erro = '';
-   
+
     //fazendo uma requisição POST para o serviço de autenticação
     //da API de usuários /POST /api/usuarios/autenticar
     this.httpClient.post(
       environment.apiUsuarios + '/autenticar',
       this.formAutenticar.value)
       .subscribe({ //capturar o retorno/resposta da API
-        next: (data : any) => { //resposta de sucesso!
+        next: (data: any) => { //resposta de sucesso!
           this.mensagem_sucesso = data.mensagem;
           //gravar os dados obtidos na local storage
           localStorage.setItem('auth_usuario', JSON.stringify(data));
@@ -60,7 +63,10 @@ export class AutenticarComponent {
         error: (e) => { //resposta de erro!
           this.mensagem_erro = e.error.mensagem;
         }
-      })
+      }).add(
+        () => {
+          this.spinner.hide();
+        })
   }
 }
 
